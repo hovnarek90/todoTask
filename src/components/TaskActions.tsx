@@ -1,12 +1,7 @@
 import React from "react";
 import { useDispatch } from "react-redux";
-import {
-  addTask,
-  editTask,
-  removeTask,
-  completeTask,
-} from "../features/tasks/tasksSlice";
-import { Task } from "../features/tasks/tasksSlice";
+import { removeTask, completeTask } from "../store/features/tasks/tasksSlice";
+import { Task } from "../store/features/tasks/tasksSlice";
 
 interface TaskActionsProps {
   task: Task;
