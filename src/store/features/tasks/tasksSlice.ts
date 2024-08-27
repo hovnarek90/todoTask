@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { completeTaskInFirestore } from "./tasksThunks";
 
 export interface Task {
   id: string;
@@ -62,6 +63,15 @@ const tasksSlice = createSlice({
       });
     },
   },
+  extraReducers: (builder) => {
+    builder.addCase(completeTaskInFirestore.fulfilled, (state, action) => {
+      // Find the task in the state and update its status to "Completed"
+      const task = state.tasks.find((t) => t.id === action.payload);
+      if (task) {
+        task.status = "Completed";
+      }
+    });
+  },
 });
 
 export const {
@@ -72,4 +82,5 @@ export const {
   deleteTask,
   checkOverdueTasks,
 } = tasksSlice.actions;
+
 export default tasksSlice.reducer;

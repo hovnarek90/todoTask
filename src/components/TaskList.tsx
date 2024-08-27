@@ -1,13 +1,25 @@
-import React, { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "../store/store";
+import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../store/store";
 import TaskItem from "./TaskItem";
 import { Task, removeTask } from "../store/features/tasks/tasksSlice";
 import TaskForm from "./TaskForm";
+import { fetchAllTasks } from "../store/features/tasks/tasksThunks";
+import { deleteTaskFromFirestore } from "../store/features/tasks/tasksThunks";
 
 const TaskList: React.FC = () => {
-  const tasks = useSelector((state: RootState) => state.tasks);
-  const dispatch = useDispatch();
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    const loadTasks = async () => {
+      const fetchedTasks = await fetchAllTasks();
+      setTasks(fetchedTasks as Task[]);
+    };
+
+    loadTasks();
+  }, []);
+  // const tasks = useSelector((state: RootState) => state.tasks);
+  const dispatch: AppDispatch = useDispatch();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const handleEditTask = (task: Task) => {
@@ -15,6 +27,7 @@ const TaskList: React.FC = () => {
   };
 
   const handleRemoveTask = (taskId: string) => {
+    dispatch(deleteTaskFromFirestore(taskId));
     dispatch(removeTask(taskId));
   };
 

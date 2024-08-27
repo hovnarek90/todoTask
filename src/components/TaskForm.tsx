@@ -2,12 +2,16 @@ import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useDispatch } from "react-redux";
-import { addTask, editTask } from "../store/features/tasks/tasksSlice";
 import { Task } from "../store/features/tasks/tasksSlice";
 import { TextField, Button, Typography, Container, Box } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
+import {
+  addTaskToFirestore,
+  editTaskInFirestore,
+} from "../store/features/tasks/tasksThunks";
+import { AppDispatch } from "../store/store";
 
 interface TaskFormProps {
   task?: Task;
@@ -22,21 +26,23 @@ const DatePickerField = ({ field, form, ...props }: any) => {
       {...props}
       value={field.value ? dayjs(field.value) : null}
       onChange={(value) => setFieldValue(field.name, value)}
-      renderInput={(params: any) => (
-        <TextField
-          {...params}
-          fullWidth
-          variant="outlined"
-          error={form.touched[field.name] && Boolean(form.errors[field.name])}
-          helperText={form.touched[field.name] && form.errors[field.name]}
-        />
-      )}
+      slots={{
+        textField: (params: any) => (
+          <TextField
+            {...params}
+            fullWidth
+            variant="outlined"
+            error={form.touched[field.name] && Boolean(form.errors[field.name])}
+            helperText={form.touched[field.name] && form.errors[field.name]}
+          />
+        ),
+      }}
     />
   );
 };
 
 const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
-  const dispatch = useDispatch();
+  const dispatch: AppDispatch = useDispatch();
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -50,7 +56,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
           title: Yup.string().required("Title is required"),
           deadline: Yup.date().nullable().optional(),
         })}
-        onSubmit={(values) => {
+        onSubmit={async (values) => {
           const newTask: Task = {
             id: task ? task.id : Date.now().toString(),
             title: values.title,
@@ -60,9 +66,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
           };
 
           if (task) {
-            dispatch(editTask(newTask));
+            // Use thunk to edit the task in Firestore
+            dispatch(editTaskInFirestore(newTask));
           } else {
-            dispatch(addTask(newTask));
+            // Use thunk to add the task to Firestore
+            dispatch(addTaskToFirestore(newTask));
           }
 
           onClose();

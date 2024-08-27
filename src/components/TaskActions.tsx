@@ -1,7 +1,11 @@
 import React from "react";
 import { useDispatch } from "react-redux";
-import { removeTask, completeTask } from "../store/features/tasks/tasksSlice";
 import { Task } from "../store/features/tasks/tasksSlice";
+import {
+  completeTaskInFirestore,
+  moveTaskToTrash, // Import the new thunk
+} from "../store/features/tasks/tasksThunks";
+import { AppDispatch } from "../store/store";
 
 interface TaskActionsProps {
   task: Task;
@@ -16,15 +20,16 @@ const TaskActions: React.FC<TaskActionsProps> = ({
   onRemove,
   onComplete,
 }) => {
-  const dispatch = useDispatch();
+  const dispatch: AppDispatch = useDispatch();
 
   const handleComplete = () => {
-    dispatch(completeTask(task.id));
+    dispatch(completeTaskInFirestore(task.id));
     onComplete();
   };
 
   const handleRemove = () => {
-    dispatch(removeTask(task.id));
+    
+    dispatch(moveTaskToTrash(task)); // Move the task to the trash
     onRemove();
   };
 
